@@ -1,5 +1,5 @@
 
-site_name: 'Eletiva: Embarcados Avançados (SoC e Linux Embarcado)'
+site_name: 'Usando Código C em Rust'
 
 theme:
   features:
