@@ -38,18 +38,20 @@ Para seguir esse tutorial é necessário:
 
 ## Motivação
 
-Os tutoriais disponiveis no GitHub para manipulação dos periféricos da placa oferecem exemplos completos de como interagir com a placa porém usando codigo C que pode ser complexo de debugar e muito provavél do desenvolvedor enfrentar problemas relcionados a manipulação de memória.
-Visando reaproveitar os exemplos fornecidos enquanto desenvolvemos programas completos em uma linguagem mais "completa", este tutorial irá demonstrar como usar funções desenvolvidas em C dentro de um programa desenvolvido em [Rust](https://www.rust-lang.org/), uma linguagem de programação conhecida por sua proteção de memoria, gerenciador de pacotes (_Cargo_), sem necessidade de um _runtime_ e tipagem estricta e bem definida.
+Os tutoriais disponiveis no GitHub para manipulação dos periféricos da placa oferecem exemplos completos de como interagir com a placa porém usando código C que pode ser complexo de debugar e muito provável do desenvolvedor enfrentar problemas relacionados a manipulação de memória.
+Visando reaproveitar os exemplos fornecidos enquanto desenvolvemos programas complexos em uma linguagem mais "completa", este tutorial irá demonstrar como usar funções desenvolvidas em C dentro de um programa desenvolvido em [Rust](https://www.rust-lang.org/), uma linguagem de programação conhecida por sua proteção de memória, gerenciador de pacotes (_Cargo_), sem necessidade de um _runtime_ e tipagem estricta.
 
 ---
 
 ## Compilando o código em C
 
-Antes de entrarmos no código em Rust do projeto precisamos desenvolver as funções em C as quais iremos utilizar, defini-las em um arquivo de cabeçalho _.h_.
+Antes de entrarmos no código em Rust do projeto precisamos desenvolver as funções em C as quais iremos utilizar.
 
-Neste tutorial vamos fornecer ao código C funções para manipular e ler o LED, escrever no LCD e funções para inicializar e encerrar as variavéis necessarias para alterar os periféricos da placa.
+Primeiro iremos defini-las em um arquivo de cabeçalho _main.h_.
 
-Nosso _main.h_ defini as 4 funções que foram citadas acima do seguinte jeito:
+Neste tutorial vamos fornecer ao programa em Rust funções escritas em C as quais manipulam o LED da placa, escreve no LCD e funções para inicializar e encerrar as variavéis necessárias para alterar os periféricos da placa.
+
+Nosso _main.h_ define as 4 funções que foram citadas acima do seguinte jeito:
 
 `src/board-controller/main.h`
 ```c
@@ -64,12 +66,12 @@ int _init_virtual_base();
 void _close_virtual_base();
 ```
 
-O arquivo _main.c_ implementa as funções usando os exemplos fornecidos no documentos item _b_:
+O arquivo _main.c_ implementa as funções usando os exemplos fornecidos no item _b_ dos documentos:
 
 !!! warning 
     Note que em nosso _main.c_ há varios módulos incluidos. Alguns destes são fornecidos pela instalação da infra no tutorial do Professor Rafael Corsi (Softwares item _a_) e serão referenciados no momento da compilação.
     Outros precisam ser copiados e compilados juntos no momento da compilação do _main.c_.
-    Esta separação ficará clara quando criarmos o _Makefile_ para compilar.
+    Esta separação ficará clara quando criarmos o _Makefile_ para compilar o código em C.
 
 `src/board-controller/main.c`
 ```c
@@ -186,15 +188,15 @@ void _close_virtual_base() {
 
 ```
 
-Agora precisamos criar um _Makefile_ para compilarmos nosso programa C em uma biblioteca estática para isso primeiro precisamos compilar os arquivos _.c_ em arquivos _.o_ (código C compilado porém não executavél) e após isso podemos arquivar todos os arquivos _.o_ gerados e uma biblioteca estática _.a_.
+Agora precisamos criar um _Makefile_ para compilarmos nosso código C em uma biblioteca estática. Para isso primeiro precisamos compilar os arquivos _.c_ em arquivos _.o_ (código C compilado porém não executável) e após isso podemos arquivar todos os arquivos _.o_ gerados em uma biblioteca estática _.a_.
 
 !!! info
     Bibliotecas estáticas nada mais são que todos os arquivos em C do seu programa compilados (_.o_) agrupados em um arquivo que pode ser usado em qualquer programa C exatamente como uma biblioteca baixada pelo _pip_ ou _npm_. [Mais informações](https://medium.com/@StueyGK/what-is-c-static-library-fb895b911db1)
 
 !!! warning
-    Vale lembrar que bibliotecas estáticas devem possuir o prefixo _lib_ para serem reconhecidas por programas C e programas em Rust
+    Vale lembrar que bibliotecas estáticas devem possuir o prefixo _lib_ para serem reconhecidas por programas em C ou em Rust.
 
-Como vamos compilar para executar na placa temos que usar o GCC apropriado fornecido pela instalação no tutorial de configuração de infra do Professor Rafael Corsi e também fazer referencia as bibliotecs do sistema da placa também fornecido pelo tutorial de configuração da infra.
+Como vamos compilar para executar na placa temos que usar o GCC apropriado fornecido pela instalação no tutorial de configuração de infra do Professor Rafael Corsi e também fazer referência as bibliotecas do sistema da placa também fornecidos pelo tutorial de configuração da infra.
 
 Segue o _Makefile_ deste tutorial:
 
@@ -231,18 +233,25 @@ clean:
 
 ```
 
-O comando em questão é o comando `build-lib` o qual depende dos arquivos da biblioteca estática em C os quais são compilados usando o GCC apropriado (`arm-linux-gnueabihf-gcc`)  e faz referência aos arquivos do sistema da placa.
+O comando em questão é o comando `build-lib`, quando rodamos no terminal o seguinte comando:
+
+```bash
+$ make build-lib
+```
+
+
+O _Makefile_ irá conferir as dependencias do comando `build-lib`, que são os arquivos da biblioteca estática em C compilados usando o GCC apropriado (`arm-linux-gnueabihf-gcc`) e fazendo referência aos arquivos do sistema da placa.
 
 !!! warning
     Caso tenha alterado algum caminho durante o tutorial de infra não esqueça de alterar seu _.bashrc_ e _Makefile_ com os caminhos apropriados.
 
-Após gerar os objetos compilados _.o_ usamos o comando `ar rcs ./libboardcontroller.a (...arquivos .o)` (comando `build-lib` do _Makefile_) para gerarmos a biblioteca estática `libboardcontroller.a` a qual possui nossa funções desenvolvidas com todas as dependências.
+Após gerar os objetos compilados _.o_ o _Makefile_ irá executar o comando `ar rcs ./libboardcontroller.a (...arquivos .o)` (primeiro comando do `build-lib`) para gerarmos a biblioteca estática `libboardcontroller.a` a qual possui nossa funções desenvolvidas com todas as dependências.
 
 ---
 
 ## Desenvolvendo código em Rust usando a biblioteca estática
 
-Agora vamos iniciar nosso projeto em Rust e desenvolver um programa simples em Rust o qual manipula o LED e escreve no LCD da placa.
+Agora vamos iniciar nosso projeto em Rust e desenvolver um programa simples em Rust o qual manipula o LED e escreve no LCD da placa usando as funções em C desenvolvidas anteriormente.
 
 Primeiro vamos iniciar o _Cargo_ na pasta do projeto usando o seguinte comando
 
@@ -325,8 +334,86 @@ fn main() {
 }
 ```
 
+Nosso programa Rust irá executar as seguintes tarefas usando as funções definidas pela biblioteca:
+
+1. Ler o estado atual do LED e imprimir no terminal.
+
+2. Manipular o LED para ficar acesso.
+
+3. Manipular o LED para ficar apagado.
+
+4. Escrever no LCD a mensagem "_Hello World!_"
+
+Agora estamos prontos para compilar nosso programa Rust e executa-lo no hardware _target_.
 
 
+
+
+## Compilando o programa em Rust usando _Cargo_
+
+Antes de executarmos comandos com o _Cargo_ para compilar nosso programa devemos instalar o crate `libc` usado no programa e fazer algumas configurações para indicar ao compilador qual GCC queremos usar para esta compilação.
+
+Vamos começar instalando o crate `libc`, para isso é ncessario apenas executar o seguinte comando na raiz do projeto:
+
+```bash
+$ cargo add libc
+```
+
+Agora vamos configurar o _target_ `arm-unknown-linux-gnueabihf` para usar o GCC apropriado para compilar programas para a placa, primeiramente vamos editar o arquivo `~/.cargo/config` e adicionar as seguintes linhas:
+
+
+`~/.cargo/config`
+```bash
+[target.arm-unknown-linux-gnueabihf]
+linker = "arm-linux-gnueabihf-gcc"
+```
+
+Esta linha diz ao compilador do _Cargo_ que quando pedirmos para compilar o programa para o _target_ `arm-unknown-linux-gnueabihf` o compilador deve usar o seguinte GCC (`arm-linux-gnueabihf-gcc`).
+
+
+A ultima configuração que precisamos fazer antes de executar comandos do _cargo_ é editar o arquivo `build.rs` na raiz do projeto (criar o arquivo caso não existir) e adicionar as seguintes linhas:
+
+`./build.rs`
+```rust
+fn main() {
+    println!("cargo:rustc-link-search=*caminho_para_sua_biblioteca_.a*");
+}
+```
+
+Estas linhas acima dizem ao compilador do Rust para procurar as bibliotecas linkadas em seu código Rust usando o atributor `#[link]` no diretório de sua preferência.
+
+Finalmente podemos usar o comando `build` do _Makefile_ para compilar o programa Rust em um executavel, este comando executa o comando `build-lib` como dependencia para compilar a biblioteca estática e após isso usa o _Cargo_ para compilar o programa Rust em um executavel para a placa.
+
+`Makefile`
+```make
+build: build-lib
+	cargo build --target arm-unknown-linux-gnueabihf
+```
+
+!!! info 
+    Note que no comando `cargo build` especificamos um target `arm-unknown-linux-gnueabihf`, esta especificação usa a configuração feita anteriormente para determinar o GCC correto para compilar o programa.
+
+
+
+## Executando o programa
+
+Finalmente de posse do executavel podemos acessar a placa e ao executar o programa Rust compilado temos o resultados esperado.
+
+1. O programa le o estado atual do LED e imprimi no terminal.
+
+2. O LED é ligado.
+
+3. O LED apaga.
+
+4. Escreve no LCD a mensagem "_Hello World!_".
+
+
+<iframe width="630" height="450" src="https://www.youtube.com/embed/UIGsSLCoIhM" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+
+Este tutorial apresenta somente um exemplo simples do que pode ser feito porém com as funções de manipulação dos perfiréricos + os exemplos fornecidos no item _b_ dos documentos + os _crates_ disponíveis para Rust, o céu é o limite.
+
+Sugiro como continuação deste tutorial implementar a [entrega 2](https://insper.github.io/Embarcados-Avancados/Entrega-5/) usando a biblioteca que já foi gerada no tutorial e implementando o servidor web em Rust.
 
 
 
