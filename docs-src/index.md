@@ -36,6 +36,10 @@ Para seguir esse tutorial é necessário:
     3. [Tutorial do Rust sobre _unsafe code_](https://doc.rust-lang.org/book/ch19-01-unsafe-rust.html#using-extern-functions-to-call-external-code)
     4. [Compilação cruzada usando _Cargo_](https://stackoverflow.com/questions/39705213/cross-compiling-rust-from-windows-to-arm-linux)
 
+
+- **Repositório:**
+    1. O [seguinte repositório](https://github.com/gabrielzezze/tutorial-soc-linux-embarcados) contém um projeto exemplo com todos os arquivos desenvolvidos e necessários para completar este tutorial e serve como uma base para futuras iterações.
+
 ## Motivação
 
 Os tutoriais disponiveis no GitHub para manipulação dos periféricos da placa oferecem exemplos completos de como interagir com a placa porém usando código C que pode ser complexo de debugar e muito provável do desenvolvedor enfrentar problemas relacionados a manipulação de memória.
@@ -69,7 +73,7 @@ void _close_virtual_base();
 O arquivo _main.c_ implementa as funções usando os exemplos fornecidos no item _b_ dos documentos:
 
 !!! warning 
-    Note que em nosso _main.c_ há varios módulos incluidos. Alguns destes são fornecidos pela instalação da infra no tutorial do Professor Rafael Corsi (Softwares item _a_) e serão referenciados no momento da compilação.
+    Note que em nosso _main.c_ há varios módulos incluidos. Alguns destes são fornecidos pela instalação da infra no [tutorial do Professor Rafael Corsi (Softwares item _a_) (Compilador para Linux ARM & Bibliotecas para compilar programas para a DE10-Standard)](https://insper.github.io/Embarcados-Avancados/Tutorial-HPS-BuildSystem/) e serão referenciados no momento da compilação.
     Outros precisam ser copiados e compilados juntos no momento da compilação do _main.c_.
     Esta separação ficará clara quando criarmos o _Makefile_ para compilar o código em C.
 
@@ -196,7 +200,7 @@ Agora precisamos criar um _Makefile_ para compilarmos nosso código C em uma bib
 !!! warning
     Vale lembrar que bibliotecas estáticas devem possuir o prefixo _lib_ para serem reconhecidas por programas em C ou em Rust.
 
-Como vamos compilar para executar na placa temos que usar o GCC apropriado fornecido pela instalação no tutorial de configuração de infra do Professor Rafael Corsi e também fazer referência as bibliotecas do sistema da placa também fornecidos pelo tutorial de configuração da infra.
+Como vamos compilar para executar na placa temos que usar o GCC apropriado fornecido pela instalação no [tutorial de configuração de infra do Professor Rafael Corsi (Compilador para Linux ARM & Bibliotecas para compilar programas para a DE10-Standard)](https://insper.github.io/Embarcados-Avancados/Tutorial-HPS-BuildSystem/) e também fazer referência as bibliotecas do sistema da placa também fornecidos pelo tutorial de configuração da infra.
 
 Segue o _Makefile_ deste tutorial:
 
@@ -243,7 +247,7 @@ $ make build-lib
 O _Makefile_ irá conferir as dependencias do comando `build-lib`, que são os arquivos da biblioteca estática em C compilados usando o GCC apropriado (`arm-linux-gnueabihf-gcc`) e fazendo referência aos arquivos do sistema da placa.
 
 !!! warning
-    Caso tenha alterado algum caminho durante o tutorial de infra não esqueça de alterar seu _.bashrc_ e _Makefile_ com os caminhos apropriados.
+    Caso tenha alterado algum caminho durante o [tutorial de infra](Compilador para Linux ARM & Bibliotecas para compilar programas para a DE10-Standard)](https://insper.github.io/Embarcados-Avancados/Tutorial-HPS-BuildSystem/) não esqueça de alterar seu _.bashrc_ e _Makefile_ com os caminhos apropriados.
 
 Após gerar os objetos compilados _.o_ o _Makefile_ irá executar o comando `ar rcs ./libboardcontroller.a (...arquivos .o)` (primeiro comando do `build-lib`) para gerarmos a biblioteca estática `libboardcontroller.a` a qual possui nossa funções desenvolvidas com todas as dependências.
 
@@ -376,9 +380,13 @@ A ultima configuração que precisamos fazer antes de executar comandos do _carg
 `./build.rs`
 ```rust
 fn main() {
-    println!("cargo:rustc-link-search=*caminho_para_sua_biblioteca_.a*");
+    println!("cargo:rustc-link-search=*caminho_para_diretorio_que_contem_sua_biblioteca_.a*");
 }
 ```
+
+!!! warning
+    Não esqueça de alterar este caminho no arquivo `build.rs` quando for executar na sua máquina.
+
 
 Estas linhas acima dizem ao compilador do Rust para procurar as bibliotecas linkadas em seu código Rust usando o atributor `#[link]` no diretório de sua preferência.
 
@@ -408,130 +416,10 @@ Finalmente de posse do executavel podemos acessar a placa e ao executar o progra
 4. Escreve no LCD a mensagem "_Hello World!_".
 
 
-<iframe width="630" height="450" src="https://www.youtube.com/embed/UIGsSLCoIhM" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+<iframe width="630" height="450" src="https://player.vimeo.com/video/769181527?h=a752617bd7&amp;badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 
 Este tutorial apresenta somente um exemplo simples do que pode ser feito porém com as funções de manipulação dos perfiréricos + os exemplos fornecidos no item _b_ dos documentos + os _crates_ disponíveis para Rust, o céu é o limite.
 
 Sugiro como continuação deste tutorial implementar a [entrega 2](https://insper.github.io/Embarcados-Avancados/Entrega-5/) usando a biblioteca que já foi gerada no tutorial e implementando o servidor web em Rust.
 
-
-
-
-
-
-
-
-
-
-
-
-
-<br></br>
-<br></br>
-<br></br>
-<br></br>
-<br></br>
-<br></br>
-<br></br>
-<br></br>
-<br></br>
-<br></br>
-<br></br>
-<br></br>
-<br></br>
-
-
-!!! info
-Essas duas partes são obrigatórias no tutorial:
-
-    - Nome de vocês
-    - Começando
-    - Motivação
-
-## Recursos Markdown
-
-Vocês podem usar tudo que já sabem de markdown mais alguns recursos:
-
-!!! note
-Bloco de destaque de texto, pode ser:
-
-    - note, example, warning, info, tip, danger
-
-!!! example "Faça assim"
-É possível editar o título desses blocos
-
-    !!! warning
-        Isso também é possível de ser feito, mas
-        use com parcimonia.
-
-??? info
-Também da para esconder o texto, usar para coisas
-muito grandes, ou exemplos de códigos.
-
-    ```txt
-    ...
-
-
-
-
-
-
-
-
-
-
-
-    oi!
-    ```
-
-- **Esse é um texto em destaque**
-- ==Pode fazer isso também==
-
-Usar emojis da lista:
-
-:two_hearts: - https://github.com/caiyongji/emoji-list
-
-```c
-// da para colocar códigos
- void main (void) {}
-```
-
-É legal usar abas para coisas desse tipo:
-
-=== "C"
-
-    ``` c
-    #include <stdio.h>
-
-    int main(void) {
-      printf("Hello world!\n");
-      return 0;
-    }
-    ```
-
-=== "C++"
-
-    ``` c++
-    #include <iostream>
-
-    int main(void) {
-      std::cout << "Hello world!" << std::endl;
-      return 0;
-    }
-    ```
-
-Inserir vídeo:
-
-- Abra o youtube :arrow_right: clique com botão direito no vídeo :arrow_right: copia código de incorporação:
-
-<iframe width="630" height="450" src="https://www.youtube.com/embed/UIGsSLCoIhM" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-
-!!! tip
-Eu ajusto o tamanho do vídeo `width`/`height` para não ficar gigante na página
-
-Imagens você insere como em plain markdown, mas tem a vantagem de poder mudar as dimensões com o marcador `{width=...}`
-
-![](icon-elementos.png)
-
-![](icon-elementos.png){width=200}
